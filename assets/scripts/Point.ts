@@ -20,24 +20,6 @@ export class Point extends Component {
             }
         }
 
-        // 添加按鈕組件來處理點擊
-        const button = this.getComponent(Button) || this.addComponent(Button);
-        button.node.on(Node.EventType.TOUCH_END, this.onTouchEnd, this);
     }
 
-    onTouchEnd(event: EventTouch) {
-        console.log("點擊點位:", this.node.name, "位置:", this.node.position);
-        
-        if (this.highlight) {
-            this.highlight.active = true;
-        }
-
-        // 使用 GameManager 單例
-        const gameManager = GameManager.instance;
-        if (gameManager) {
-            gameManager.onPointClicked(this.node);
-        } else {
-            console.warn('GameManager not found!');
-        }
-    }
 }

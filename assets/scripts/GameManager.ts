@@ -59,7 +59,6 @@ export class GameManager extends Component {
     }
 
     spawnPoints() {
-        const offset = (this.gridSize - 1) / 2;
         const boardSize = this.gridSize * this.spacing;
         const startX = -boardSize / 2 + this.spacing / 2;
         const startY = boardSize / 2 - this.spacing / 2;
@@ -89,28 +88,32 @@ export class GameManager extends Component {
     }
 
     onPointClicked(point: Node) {
-        console.log("GameManager 知道你點了：", point.name);
+        console.log("GameManage::知道你點了：", point.name);
         
         // 檢查是否是山羊的回合
-        if (!this.isGoatTurn) {
-            console.log("現在不是山羊的回合");
-            return;
+        if (this.isGoatTurn) {
+            // 檢查是否已經達到最大山羊數量
+            if (this.goatCount >= this.maxGoats) {
+                console.log("已經達到最大山羊數量");
+                return;
+            }
+
+            // 檢查該位置是否已經有棋子
+            if (this.hasPieceAtPoint(point)) {
+                console.log("該位置已經有棋子");
+                return;
+            }
+
+            // 放置山羊
+            this.placeGoat(point);
+
+        }
+        // 老虎的回合
+        else{
+            // 點選老虎移動位置
+            this.moveTiger(point);
         }
 
-        // 檢查是否已經達到最大山羊數量
-        if (this.goatCount >= this.maxGoats) {
-            console.log("已經達到最大山羊數量");
-            return;
-        }
-
-        // 檢查該位置是否已經有棋子
-        if (this.hasPieceAtPoint(point)) {
-            console.log("該位置已經有棋子");
-            return;
-        }
-
-        // 放置山羊
-        this.placeGoat(point);
     }
 
     private hasPieceAtPoint(point: Node): boolean {
@@ -157,5 +160,10 @@ export class GameManager extends Component {
         
         // 切換回合
         this.isGoatTurn = false;
+    }
+
+    private moveTiger(point: Node) {
+        console.log("GameManage::知道你點了老虎：", point.name);
+        this.isGoatTurn = true;
     }
 }
