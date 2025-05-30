@@ -82,7 +82,8 @@ export class GameManager extends Component {
             const worldPos = this.getWorldPositionFromGrid(x, y);
             tiger.setPosition(worldPos);
             this.boardNode.addChild(tiger);
-            tiger.name = `tiger-${x}-${y}`;
+            tiger.name = `tiger-${x+2}-${y+2}`;
+            console.log('tiger' , tiger.name);
             this.tigerCount++;
             this.boardState[y + 2][x + 2] = CellState.TIGER;
         });
@@ -155,8 +156,7 @@ export class GameManager extends Component {
     private handleTigerTurn(point: Node, x: number, y: number) {
         if (!this.selectedTiger) {
             if (this.boardState[y][x] === CellState.TIGER) {
-                this.selectedTiger = point;
-                console.log("選中老虎：", point.name);
+                this.selectedTiger = this.boardNode.getChildByName(`tiger-${x}-${y}`);
             }
             return;
         }
@@ -215,12 +215,14 @@ export class GameManager extends Component {
         const [_, oldX, oldY] = this.selectedTiger.name.split('-').map(Number);
         const tiger = this.boardNode.getChildByName(this.selectedTiger.name);
         console.log("GameManage::moveTiger：", this.boardNode, x, y);
-        
         if (tiger) {
-            tiger.setPosition(point.getWorldPosition());
+            const worldPos = point.getWorldPosition();
+            const localPos = this.boardNode.getComponent(UITransform).convertToNodeSpaceAR(worldPos);
+            tiger.setPosition(localPos);
             this.boardState[oldY][oldX] = CellState.EMPTY;
             this.boardState[y][x] = CellState.TIGER;
             tiger.name = `tiger-${x}-${y}`;
+            console.log('GameManage::moveTiger2' ,tiger, point.getWorldPosition());
         }
 
         this.checkGoatCapture(oldX, oldY, x, y);
