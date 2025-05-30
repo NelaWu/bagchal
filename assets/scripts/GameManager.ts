@@ -2,7 +2,7 @@ import { _decorator, Component, Node, Prefab, instantiate, Vec3, log, Input, Eve
 const { ccclass, property } = _decorator;
 
 // 定義棋盤格子的狀態
-enum CellState {
+export enum CellState {
     EMPTY = 0,
     TIGER = 1,
     GOAT = 2
@@ -214,6 +214,7 @@ export class GameManager extends Component {
     private moveTiger(point: Node, x: number, y: number) {
         const [_, oldX, oldY] = this.selectedTiger.name.split('-').map(Number);
         const tiger = this.boardNode.getChildByName(this.selectedTiger.name);
+        console.log("GameManage::moveTiger：", this.boardNode, x, y);
         
         if (tiger) {
             tiger.setPosition(point.getWorldPosition());

@@ -1,11 +1,19 @@
 import { _decorator, Component, Node,  UITransform, BoxCollider2D, Vec2, Button } from 'cc';
-import { GameManager } from './GameManager';
+import { GameManager,CellState } from './GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('Point')
 export class Point extends Component {
     @property(Node)
     highlight: Node = null; // 發光圈（子節點）
+    private piece: Node | null = null;  // 可以存放老虎或山羊的棋子
+
+    get getPiece():Node|null{
+        return this.piece;
+    }
+    // set setPiece(obj:Node|null){
+    //     this.piece = obj;
+    // }
 
     start() {
         // 確保點位有 BoxCollider2D 組件
@@ -26,10 +34,24 @@ export class Point extends Component {
         button.node.on(Node.EventType.TOUCH_END, this.onTouchEnd, this);
     }
 
-    onTouchEnd() {
+    private onTouchEnd() {
         // 通知 GameManager 這個點被點擊了
         const gameManager = this.node.parent.getComponent(GameManager);
         console.log("Point::onTouchEnd", gameManager);
         this.node.emit("point-clicked", this.node);
+    }
+
+    public setPiece(type:CellState):void{
+        //to do 
+        switch(type){
+            case CellState.EMPTY:
+                this.piece = null;
+                break;
+            case CellState.GOAT:
+                
+                break;
+            case CellState.TIGER:
+                break;
+        }
     }
 }
