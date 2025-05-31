@@ -1,4 +1,5 @@
 import { _decorator, Component, Node, Prefab, instantiate, Vec3, log, Input, EventTouch, UITransform, Sprite } from 'cc';
+import { Point } from './Point';
 const { ccclass, property } = _decorator;
 
 // 定義棋盤格子的狀態
@@ -184,6 +185,12 @@ export class GameManager extends Component {
         this.boardState[y][x] = CellState.GOAT;
         goat.setSiblingIndex(this.boardNode.children.length - 1);
         
+        // 更新 Point 組件的狀態
+        const pointComp = point.getComponent(Point);
+        if (pointComp) {
+            pointComp.setPiece(CellState.GOAT);
+        }
+        
         this.goatCount++;
         console.log("放置山羊成功，當前山羊數量：", this.goatCount);
         
@@ -222,6 +229,22 @@ export class GameManager extends Component {
             this.boardState[oldY][oldX] = CellState.EMPTY;
             this.boardState[y][x] = CellState.TIGER;
             tiger.name = `tiger-${x}-${y}`;
+            
+            // 更新舊位置的 Point 組件狀態
+            const oldPoint = this.boardNode.getChildByName(`point-${oldX}-${oldY}`);
+            if (oldPoint) {
+                const oldPointComp = oldPoint.getComponent(Point);
+                if (oldPointComp) {
+                    oldPointComp.setPiece(CellState.EMPTY);
+                }
+            }
+            
+            // 更新新位置的 Point 組件狀態
+            const pointComp = point.getComponent(Point);
+            if (pointComp) {
+                pointComp.setPiece(CellState.TIGER);
+            }
+            
             console.log('GameManage::moveTiger2' ,tiger, point.getWorldPosition());
         }
 

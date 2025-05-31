@@ -11,9 +11,6 @@ export class Point extends Component {
     get getPiece():Node|null{
         return this.piece;
     }
-    // set setPiece(obj:Node|null){
-    //     this.piece = obj;
-    // }
 
     start() {
         // 確保點位有 BoxCollider2D 組件
@@ -42,15 +39,17 @@ export class Point extends Component {
     }
 
     public setPiece(type:CellState):void{
-        //to do 
         switch(type){
             case CellState.EMPTY:
                 this.piece = null;
                 break;
             case CellState.GOAT:
-                
+                const [_, x, y] = this.node.name.split('-').map(Number);
+                this.piece = this.node.parent.getChildByName(`goat-${x}-${y}`);
                 break;
             case CellState.TIGER:
+                const [__, tigerX, tigerY] = this.node.name.split('-').map(Number);
+                this.piece = this.node.parent.getChildByName(`tiger-${tigerX}-${tigerY}`);
                 break;
         }
     }
