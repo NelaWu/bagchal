@@ -32,7 +32,7 @@ export class GameManager extends Component {
 
     // ===== 遊戲配置 =====
     private readonly gridSize: number = 5;
-    private readonly spacing: number = 185; // 每個點之間的距離
+    private readonly spacing: number = 188; // 每個點之間的距離
     private readonly maxGoats: number = 20;
     private readonly tigerPositions = [
         [-2, 2], [2, 2], [-2, -2], [2, -2]
@@ -59,8 +59,8 @@ export class GameManager extends Component {
         if (!this.validatePrefabs()) return;
         
         this.initializeBoardState();
-        this.spawnTigers();
         this.spawnPoints();
+        this.spawnTigers();
     }
 
     // ===== 初始化方法 =====
@@ -130,7 +130,6 @@ export class GameManager extends Component {
     // ===== 事件處理方法 =====
     onPointClicked(point: Node) {
         console.log("GameManage::知道你點了：", point.name, this.isGoatTurn);
-        
         const [_, x, y] = point.name.split('-').map(Number);
         
         if (this.isGoatTurn) {

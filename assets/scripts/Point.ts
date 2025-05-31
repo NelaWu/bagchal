@@ -53,4 +53,5 @@ export class Point extends Component {
                 break;
         }
     }
+
 }
