@@ -255,8 +255,9 @@ export class GameManager extends Component {
     private checkGoatCapture(oldX: number, oldY: number, newX: number, newY: number) {
         const midX = (oldX + newX) / 2;
         const midY = (oldY + newY) / 2;
+        console.log('checkGoatCapture', midX, midY);
         
-        if (this.boardState[midY][midX] === CellState.GOAT) {
+        if (this.boardState[midY]?.[midX] === CellState.GOAT) {
             const goatName = `goat-${midX}-${midY}`;
             const goat = this.boardNode.getChildByName(goatName);
             if (goat) {

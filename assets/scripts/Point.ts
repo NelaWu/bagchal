@@ -1,12 +1,16 @@
-import { _decorator, Component, Node,  UITransform, BoxCollider2D, Vec2, Button } from 'cc';
+import { _decorator, Component, Node,  UITransform, BoxCollider2D, Vec2, Button, Sprite, SpriteFrame } from 'cc';
 import { GameManager,CellState } from './GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('Point')
 export class Point extends Component {
+    @property(SpriteFrame)
+    highlightSprite: SpriteFrame = null;
+
     @property(Node)
     highlight: Node = null; // 發光圈（子節點）
     private piece: Node | null = null;  // 可以存放老虎或山羊的棋子
+    private sprite: Sprite = null;
 
     get getPiece():Node|null{
         return this.piece;
@@ -29,6 +33,14 @@ export class Point extends Component {
         // 添加按鈕組件處理點擊
         const button = this.getComponent(Button) || this.addComponent(Button);
         button.node.on(Node.EventType.TOUCH_END, this.onTouchEnd, this);
+
+        // 獲取 Sprite 組件
+        this.sprite = this.getComponent(Sprite);
+        if (!this.sprite) {
+            this.sprite = this.addComponent(Sprite);
+        }
+        // 初始狀態不顯示圖片
+        this.sprite.spriteFrame = null;
     }
 
     private onTouchEnd() {
@@ -54,4 +66,10 @@ export class Point extends Component {
         }
     }
 
+    // 設置高亮狀態
+    public setHighlight(active: boolean): void {
+        if (this.sprite) {
+            this.sprite.spriteFrame = active ? this.highlightSprite : null;
+        }
+    }
 }
