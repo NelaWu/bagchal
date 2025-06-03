@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Prefab, instantiate, Vec3, log, Input, EventTouch, UITransform, Sprite } from 'cc';
+import { _decorator, Component, Node, Prefab, instantiate, Vec3, log, Input, EventTouch, UITransform, Sprite, SpriteFrame } from 'cc';
 import { Point } from './Point';
 const { ccclass, property } = _decorator;
 
@@ -29,6 +29,15 @@ export class GameManager extends Component {
 
     @property({ type: Node })
     boardNode: Node = null;
+
+    @property({ type: Node })
+    turnNotice: Node = null;
+
+    @property({ type: SpriteFrame })
+    goatTurnSprite: SpriteFrame = null;
+
+    @property({ type: SpriteFrame })
+    tigerTurnSprite: SpriteFrame = null;
 
     // ===== 遊戲配置 =====
     private readonly gridSize: number = 5;
@@ -115,6 +124,33 @@ export class GameManager extends Component {
         }
     }
 
+    private setTurn(type: CellState): void {
+        if (!this.turnNotice) {
+            console.warn('turnNotice 節點未設置！');
+            return;
+        }
+
+        const sprite = this.turnNotice.getComponent(Sprite);
+        if (!sprite) {
+            console.warn('turnNotice 沒有 Sprite 組件！');
+            return;
+        }
+
+        switch(type) {
+            case CellState.GOAT:
+                sprite.spriteFrame = this.goatTurnSprite;
+                this.isGoatTurn = true;
+                break;
+            case CellState.TIGER:
+                sprite.spriteFrame = this.tigerTurnSprite;
+                this.isGoatTurn = false;
+                break;
+            case CellState.EMPTY:
+                console.warn('GameManager::setTurn 傳參數錯誤!!!')
+                break;
+        }
+    }
+
     // ===== 座標轉換方法 =====
     private getWorldPositionFromGrid(x: number, y: number): Vec3 {
         const boardSize = this.gridSize * this.spacing;
@@ -129,7 +165,6 @@ export class GameManager extends Component {
 
     // ===== 事件處理方法 =====
     onPointClicked(point: Node) {
-        console.log("GameManage::知道你點了：", point.name, this.isGoatTurn);
         const [_, x, y] = point.name.split('-').map(Number);
         
         if (this.isGoatTurn) {
@@ -193,7 +228,7 @@ export class GameManager extends Component {
         this.goatCount++;
         console.log("放置山羊成功，當前山羊數量：", this.goatCount);
         
-        this.isGoatTurn = false;
+        this.setTurn(CellState.TIGER)
     }
 
     private setupGoatComponents(goat: Node) {
@@ -249,13 +284,12 @@ export class GameManager extends Component {
 
         this.checkGoatCapture(oldX, oldY, x, y);
         this.selectedTiger = null;
-        this.isGoatTurn = true;
+        this.setTurn(CellState.GOAT);
     }
 
     private checkGoatCapture(oldX: number, oldY: number, newX: number, newY: number) {
         const midX = (oldX + newX) / 2;
         const midY = (oldY + newY) / 2;
-        console.log('checkGoatCapture', midX, midY);
         
         if (this.boardState[midY]?.[midX] === CellState.GOAT) {
             const goatName = `goat-${midX}-${midY}`;
