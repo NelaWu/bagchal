@@ -4,13 +4,13 @@ const { ccclass, property } = _decorator;
 
 @ccclass('Point')
 export class Point extends Component {
-    @property(SpriteFrame)
-    highlightSprite: SpriteFrame = null;
 
     @property(Node)
     highlight: Node = null; // 發光圈（子節點）
+
     private piece: Node | null = null;  // 可以存放老虎或山羊的棋子
     private sprite: Sprite = null;
+    highlightSprite: SpriteFrame = null;
 
     get getPiece():Node|null{
         return this.piece;
@@ -36,17 +36,13 @@ export class Point extends Component {
 
         // 獲取 Sprite 組件
         this.sprite = this.getComponent(Sprite);
-        if (!this.sprite) {
-            this.sprite = this.addComponent(Sprite);
-        }
+        this.highlightSprite = this.sprite.spriteFrame;
         // 初始狀態不顯示圖片
         this.sprite.spriteFrame = null;
     }
 
     private onTouchEnd() {
         // 通知 GameManager 這個點被點擊了
-        const gameManager = this.node.parent.getComponent(GameManager);
-        console.log("Point::onTouchEnd", gameManager);
         this.node.emit("point-clicked", this.node);
     }
 
@@ -68,6 +64,7 @@ export class Point extends Component {
 
     // 設置高亮狀態
     public setHighlight(active: boolean): void {
+        console.log("Point::setHighlight", active,this.sprite);
         if (this.sprite) {
             this.sprite.spriteFrame = active ? this.highlightSprite : null;
         }
