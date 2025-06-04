@@ -49,6 +49,7 @@ export class GameManager extends Component {
 
     // ===== 遊戲狀態 =====
     private boardState: CellState[][] = [];
+    private pointNodes: Node[][] = [];  // 存储所有点位节点
     private tigerCount: number = 0;
     private goatCount: number = 0;
     private isGoatTurn: boolean = true;
@@ -104,6 +105,9 @@ export class GameManager extends Component {
         const startX = -boardSize / 2 + this.spacing / 2;
         const startY = boardSize / 2 - this.spacing / 2;
 
+        // 初始化点位数组
+        this.pointNodes = Array(this.gridSize).fill(null).map(() => Array(this.gridSize).fill(null));
+
         for (let y = 0; y < this.gridSize; y++) {
             for (let x = 0; x < this.gridSize; x++) {
                 const point = instantiate(this.pointPrefab);
@@ -112,7 +116,9 @@ export class GameManager extends Component {
                 point.setPosition(new Vec3(posX, posY, 0));
                 this.boardNode.addChild(point);
                 point.name = `point-${x}-${y}`;
-                log("生成點位:", point.name, "位置:", posX, posY);
+                
+                // 存储点位节点
+                this.pointNodes[y][x] = point;
                 
                 let pointComp = point.getComponent('Point');
                 if (!pointComp) {
@@ -138,6 +144,7 @@ export class GameManager extends Component {
                 console.warn('GameManager::setTurn 傳參數錯誤!!!')
                 break;
         }
+        this.resetHighlight();
     }
 
     // ===== 座標轉換方法 =====
@@ -168,12 +175,10 @@ export class GameManager extends Component {
             console.log("已經達到最大山羊數量");
             return;
         }
-
         if (this.boardState[y][x] !== CellState.EMPTY) {
             console.log("該位置已經有棋子");
             return;
         }
-
         this.placeGoat(point, x, y);
     }
 
@@ -182,8 +187,9 @@ export class GameManager extends Component {
             if (this.boardState[y][x] === CellState.TIGER) {
                 this.selectedTiger = this.boardNode.getChildByName(`tiger-${x}-${y}`);
                 // 显示高亮图片
+                //計算老虎可以走的位置 & 還有可以點選的點位
+                 this.calculateTigerMovePositions(this.selectedTiger);
                 const pointComp = point.getComponent(Point);
-                console.log("GameManager::handleTigerTurn", pointComp);
                 if (pointComp) {
                     pointComp.setHighlight(true);
                 }
@@ -227,7 +233,6 @@ export class GameManager extends Component {
         
         this.goatCount++;
         console.log("放置山羊成功，當前山羊數量：", this.goatCount);
-        
         this.setTurn(CellState.TIGER)
     }
 
@@ -246,9 +251,44 @@ export class GameManager extends Component {
         const prefabSprite = this.goatPrefab.data.getComponent(Sprite);
         if (prefabSprite && prefabSprite.spriteFrame) {
             sprite.spriteFrame = prefabSprite.spriteFrame;
-            console.log("設置山羊圖片成功");
         } else {
             console.warn("無法獲取山羊圖片");
+        }
+    }
+
+    private calculateTigerMovePositions(tiger: Node):void{
+        const [_,x, y] = tiger.name.split('-').map(Number);
+        console.log('GameManager::calculateTigerMovePositions',x,y);
+        // 計算老虎可以走的位置
+        // 1. 上下左右
+        this.setHighlight(x, y + 1);
+        this.setHighlight(x, y - 1);
+        this.setHighlight(x + 1, y);
+        this.setHighlight(x - 1, y);
+        
+    }
+
+    private setHighlight(x: number, y: number) {
+        const point = this.getPoint(x, y);
+        if (point) {
+            const pointComp = point.getComponent(Point);
+            if (pointComp) {
+                pointComp.setHighlight(true);
+            }
+        }
+    }
+
+    private resetHighlight() {
+        for (let y = 0; y < this.gridSize; y++) {
+            for (let x = 0; x < this.gridSize; x++) {
+                const point = this.pointNodes[y][x];
+                if (point) {
+                    const pointComp = point.getComponent(Point);
+                    if (pointComp) {
+                        pointComp.setHighlight(false);
+                    }
+                }
+            }
         }
     }
 
@@ -264,12 +304,12 @@ export class GameManager extends Component {
             tiger.name = `tiger-${x}-${y}`;
             
             // 更新舊位置的 Point 組件狀態
-            const oldPoint = this.boardNode.getChildByName(`point-${oldX}-${oldY}`);
+            const oldPoint = this.getPoint(oldX, oldY);
             if (oldPoint) {
                 const oldPointComp = oldPoint.getComponent(Point);
                 if (oldPointComp) {
                     oldPointComp.setPiece(CellState.EMPTY);
-                    oldPointComp.setHighlight(false);  // 清除旧位置的高亮图片
+                    oldPointComp.setHighlight(false);
                 }
             }
             
@@ -277,7 +317,7 @@ export class GameManager extends Component {
             const pointComp = point.getComponent(Point);
             if (pointComp) {
                 pointComp.setPiece(CellState.TIGER);
-                pointComp.setHighlight(false);  // 清除新位置的高亮图片
+                pointComp.setHighlight(false);
             }
         }
 
@@ -300,5 +340,12 @@ export class GameManager extends Component {
                 console.log("老虎吃掉一隻羊！");
             }
         }
+    }
+
+    private getPoint(x: number, y: number): Node | null {
+        if (x >= 0 && x < this.gridSize && y >= 0 && y < this.gridSize) {
+            return this.pointNodes[y][x];
+        }
+        return null;
     }
 }

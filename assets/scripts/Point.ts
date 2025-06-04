@@ -64,7 +64,6 @@ export class Point extends Component {
 
     // 設置高亮狀態
     public setHighlight(active: boolean): void {
-        console.log("Point::setHighlight", active,this.sprite);
         if (this.sprite) {
             this.sprite.spriteFrame = active ? this.highlightSprite : null;
         }
