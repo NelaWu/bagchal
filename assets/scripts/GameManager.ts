@@ -275,8 +275,15 @@ export class GameManager extends Component {
             else if(dir.y - main.y == -1){
                 jump.y --;
             }
-            return jump;
+            
+            if(this.boardState[jump.y]?.[jump.x]=== CellState.EMPTY) return jump;
+            else return null
         }
+    }
+
+    private highlightIfValid(main: {x: number, y: number}, dir: {x: number, y: number}): void {
+        const pos = this.isValidPosition(main, dir);
+        if (pos) this.setHighlight(pos.x, pos.y);
     }
 
     private calculateTigerMovePositions(tiger: Node):void{
@@ -285,31 +292,17 @@ export class GameManager extends Component {
         const main = {x, y};
         
         // 1. 上下左右
-        const up = this.isValidPosition(main, {x, y: y+1});
-        if (up) this.setHighlight(up.x, up.y);
-        
-        const down = this.isValidPosition(main, {x, y: y-1});
-        if (down) this.setHighlight(down.x, down.y);
-        
-        const right = this.isValidPosition(main, {x: x+1, y});
-        if (right) this.setHighlight(right.x, right.y);
-        
-        const left = this.isValidPosition(main, {x: x-1, y});
-        if (left) this.setHighlight(left.x, left.y);
+        this.highlightIfValid(main, {x, y: y+1});
+        this.highlightIfValid(main, {x, y: y-1});
+        this.highlightIfValid(main, {x: x+1, y});
+        this.highlightIfValid(main, {x: x-1, y});
         
         // 2. 對角線
         if((x+y)%2==0){
-            const upRight = this.isValidPosition(main, {x: x+1, y: y+1});
-            if (upRight) this.setHighlight(upRight.x, upRight.y);
-            
-            const upLeft = this.isValidPosition(main, {x: x-1, y: y+1});
-            if (upLeft) this.setHighlight(upLeft.x, upLeft.y);
-            
-            const downRight = this.isValidPosition(main, {x: x+1, y: y-1});
-            if (downRight) this.setHighlight(downRight.x, downRight.y);
-            
-            const downLeft = this.isValidPosition(main, {x: x-1, y: y-1});
-            if (downLeft) this.setHighlight(downLeft.x, downLeft.y);
+            this.highlightIfValid(main, {x: x+1, y: y+1});
+            this.highlightIfValid(main, {x: x-1, y: y+1});
+            this.highlightIfValid(main, {x: x+1, y: y-1});
+            this.highlightIfValid(main, {x: x-1, y: y-1});
         }
     }
 
