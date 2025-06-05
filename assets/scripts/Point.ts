@@ -1,4 +1,4 @@
-import { _decorator, Component, Node,  UITransform, BoxCollider2D, Vec2, Button, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, Node,  UITransform, BoxCollider2D, Vec2, Button, Sprite, SpriteFrame, Input, EventTouch } from 'cc';
 import { GameManager,CellState } from './GameManager';
 const { ccclass, property } = _decorator;
 
@@ -11,6 +11,7 @@ export class Point extends Component {
     private piece: Node | null = null;  // 可以存放老虎或山羊的棋子
     private sprite: Sprite = null;
     highlightSprite: SpriteFrame = null;
+    private clickable: boolean = true;
 
     get getPiece():Node|null{
         return this.piece;
@@ -39,8 +40,8 @@ export class Point extends Component {
         this.highlightSprite = this.sprite.spriteFrame;
     }
 
-    private onTouchEnd() {
-        // 通知 GameManager 這個點被點擊了
+    private onTouchEnd(event: EventTouch): void {
+        if (!this.clickable) return;
         this.node.emit("point-clicked", this.node);
     }
 
@@ -69,16 +70,32 @@ export class Point extends Component {
     }
 
     // 設置點位是否可點擊
-    private setClickable(clickable: boolean): void {
-        //to do 沒有作用
-        const button = this.getComponent(Button);
-        const collider = this.getComponent(BoxCollider2D);
+    public setClickable(clickable: boolean): void {
+        this.clickable = clickable;
         
+        // 禁用/啟用 Button 組件
+        const button = this.getComponent(Button);
         if (button) {
-            button.interactable = clickable;
+            button.enabled = clickable;
         }
+        
+        // 禁用/啟用 BoxCollider2D 組件
+        const collider = this.getComponent(BoxCollider2D);
         if (collider) {
             collider.enabled = clickable;
+        }
+        
+        // 禁用/啟用 UITransform 的點擊事件
+        const uiTransform = this.getComponent(UITransform);
+        if (uiTransform) {
+            uiTransform.enabled = clickable;
+        }
+        
+        // 禁用/啟用 Node 的點擊事件
+        this.node.off(Input.EventType.TOUCH_END);
+        
+        if (clickable) {
+            this.node.on(Input.EventType.TOUCH_END, this.onTouchEnd, this);
         }
     }
 

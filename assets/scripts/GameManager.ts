@@ -191,13 +191,8 @@ export class GameManager extends Component {
         if (!this.selectedTiger) {
             if (this.boardState[y][x] === CellState.TIGER) {
                 this.selectedTiger = this.boardNode.getChildByName(`tiger-${x}-${y}`);
-                // 显示高亮图片
                 //計算老虎可以走的位置 & 還有可以點選的點位
                  this.calculateTigerMovePositions(this.selectedTiger);
-                const pointComp = point.getComponent(Point);
-                if (pointComp) {
-                    pointComp.setHighlight(true);
-                }
             }
             return;
         }
@@ -271,15 +266,16 @@ export class GameManager extends Component {
         this.setHighlight(x + 1, y);
         this.setHighlight(x - 1, y);
         // 2. 對角線
-        this.setHighlight(x + 1, y + 1);
-        this.setHighlight(x + 1, y - 1);
-        this.setHighlight(x - 1, y + 1);
-        this.setHighlight(x - 1, y - 1);
+        if((x+y)%2==0){
+            this.setHighlight(x + 1, y + 1);
+            this.setHighlight(x + 1, y - 1);
+            this.setHighlight(x - 1, y + 1);
+            this.setHighlight(x - 1, y - 1);
+        }
     }
 
     private calcuateTypePositions(type: CellState):void{
-        console.log('GameManager::calcuateTypePositions',type,this.boardState);
-        // 然后设置新的高亮状态
+        this.resetHighlight();
         for(let i:number=0;i<this.boardState.length;i++){
             for(let j:number=0;j<this.boardState[i].length;j++){
                 if (this.boardState[i][j] === type) {
