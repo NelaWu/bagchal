@@ -37,8 +37,6 @@ export class Point extends Component {
         // 獲取 Sprite 組件
         this.sprite = this.getComponent(Sprite);
         this.highlightSprite = this.sprite.spriteFrame;
-        // 初始狀態不顯示圖片
-        this.sprite.spriteFrame = null;
     }
 
     private onTouchEnd() {
@@ -67,5 +65,21 @@ export class Point extends Component {
         if (this.sprite) {
             this.sprite.spriteFrame = active ? this.highlightSprite : null;
         }
+        this.setClickable(active);
     }
+
+    // 設置點位是否可點擊
+    private setClickable(clickable: boolean): void {
+        //to do 沒有作用
+        const button = this.getComponent(Button);
+        const collider = this.getComponent(BoxCollider2D);
+        
+        if (button) {
+            button.interactable = clickable;
+        }
+        if (collider) {
+            collider.enabled = clickable;
+        }
+    }
+
 }

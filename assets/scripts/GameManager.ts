@@ -71,6 +71,9 @@ export class GameManager extends Component {
         this.initializeBoardState();
         this.spawnPoints();
         this.spawnTigers();
+
+        // 初始化山羊可放置位置
+        this.calcuateTypePositions(CellState.EMPTY);
     }
 
     // ===== 初始化方法 =====
@@ -130,21 +133,23 @@ export class GameManager extends Component {
     }
 
     private setTurn(type: CellState): void {
+        this.resetHighlight();
         const sprite = this.turnNotice.getComponent(Sprite);
         switch(type) {
             case CellState.GOAT:
                 sprite.spriteFrame = this.goatTurnSprite;
                 this.isGoatTurn = true;
+                this.calcuateTypePositions(CellState.EMPTY);
                 break;
             case CellState.TIGER:
                 sprite.spriteFrame = this.tigerTurnSprite;
                 this.isGoatTurn = false;
+                this.calcuateTypePositions(CellState.TIGER);
                 break;
             case CellState.EMPTY:
                 console.warn('GameManager::setTurn 傳參數錯誤!!!')
                 break;
         }
-        this.resetHighlight();
     }
 
     // ===== 座標轉換方法 =====
@@ -265,7 +270,23 @@ export class GameManager extends Component {
         this.setHighlight(x, y - 1);
         this.setHighlight(x + 1, y);
         this.setHighlight(x - 1, y);
-        
+        // 2. 對角線
+        this.setHighlight(x + 1, y + 1);
+        this.setHighlight(x + 1, y - 1);
+        this.setHighlight(x - 1, y + 1);
+        this.setHighlight(x - 1, y - 1);
+    }
+
+    private calcuateTypePositions(type: CellState):void{
+        console.log('GameManager::calcuateTypePositions',type,this.boardState);
+        // 然后设置新的高亮状态
+        for(let i:number=0;i<this.boardState.length;i++){
+            for(let j:number=0;j<this.boardState[i].length;j++){
+                if (this.boardState[i][j] === type) {
+                    this.setHighlight(j, i);
+                }
+            }
+        }
     }
 
     private setHighlight(x: number, y: number) {
@@ -346,6 +367,7 @@ export class GameManager extends Component {
         if (x >= 0 && x < this.gridSize && y >= 0 && y < this.gridSize) {
             return this.pointNodes[y][x];
         }
+        console.warn('GameManager::getPoint::沒有抓到對應的point',x,y);
         return null;
     }
 }
