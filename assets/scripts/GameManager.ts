@@ -256,21 +256,60 @@ export class GameManager extends Component {
         }
     }
 
+    // 檢查指定位置是否為空且不超出邊界
+    private isValidPosition(main:{x:number,y:number}, dir:{x:number,y:number}): {x:number,y:number} {
+        if(this.boardState[dir.y]?.[dir.x]=== CellState.EMPTY){
+            return {x:dir.x , y:dir.y}
+        }
+        else if(this.boardState[dir.y]?.[dir.x]=== CellState.GOAT){
+            const jump:{x:number,y:number} = {x:dir.x,y:dir.y};
+            if(dir.x - main.x == 1){
+                jump.x ++;
+            }
+            else if(dir.x - main.x == -1){
+                jump.x --;
+            }
+            if(dir.y - main.y == 1){
+                jump.y ++;
+            }
+            else if(dir.y - main.y == -1){
+                jump.y --;
+            }
+            return jump;
+        }
+    }
+
     private calculateTigerMovePositions(tiger: Node):void{
         const [_,x, y] = tiger.name.split('-').map(Number);
         console.log('GameManager::calculateTigerMovePositions',x,y);
-        // 計算老虎可以走的位置
+        const main = {x, y};
+        
         // 1. 上下左右
-        this.setHighlight(x, y + 1);
-        this.setHighlight(x, y - 1);
-        this.setHighlight(x + 1, y);
-        this.setHighlight(x - 1, y);
+        const up = this.isValidPosition(main, {x, y: y+1});
+        if (up) this.setHighlight(up.x, up.y);
+        
+        const down = this.isValidPosition(main, {x, y: y-1});
+        if (down) this.setHighlight(down.x, down.y);
+        
+        const right = this.isValidPosition(main, {x: x+1, y});
+        if (right) this.setHighlight(right.x, right.y);
+        
+        const left = this.isValidPosition(main, {x: x-1, y});
+        if (left) this.setHighlight(left.x, left.y);
+        
         // 2. 對角線
         if((x+y)%2==0){
-            this.setHighlight(x + 1, y + 1);
-            this.setHighlight(x + 1, y - 1);
-            this.setHighlight(x - 1, y + 1);
-            this.setHighlight(x - 1, y - 1);
+            const upRight = this.isValidPosition(main, {x: x+1, y: y+1});
+            if (upRight) this.setHighlight(upRight.x, upRight.y);
+            
+            const upLeft = this.isValidPosition(main, {x: x-1, y: y+1});
+            if (upLeft) this.setHighlight(upLeft.x, upLeft.y);
+            
+            const downRight = this.isValidPosition(main, {x: x+1, y: y-1});
+            if (downRight) this.setHighlight(downRight.x, downRight.y);
+            
+            const downLeft = this.isValidPosition(main, {x: x-1, y: y-1});
+            if (downLeft) this.setHighlight(downLeft.x, downLeft.y);
         }
     }
 
