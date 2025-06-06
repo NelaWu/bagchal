@@ -1,5 +1,6 @@
 import { _decorator, Component, Node, Prefab, instantiate, Vec3, log, Input, EventTouch, UITransform, Sprite, SpriteFrame } from 'cc';
 import { Point } from './Point';
+import { WinScreen } from './WinScreen';
 const { ccclass, property } = _decorator;
 
 // 定義棋盤格子的狀態
@@ -39,10 +40,12 @@ export class GameManager extends Component {
     @property({ type: SpriteFrame })
     tigerTurnSprite: SpriteFrame = null;
 
+    @property(Node)
+    winScreen: Node = null;
+
     // ===== 遊戲配置 =====
     private readonly gridSize: number = 5;
     private readonly spacing: number = 188; // 每個點之間的距離
-    private readonly maxGoats: number = 20;
     private readonly tigerPositions = [
         [-2, 2], [2, 2], [-2, -2], [2, -2]
     ];
@@ -52,6 +55,7 @@ export class GameManager extends Component {
     private pointNodes: Node[][] = [];  // 存储所有点位节点
     private tigerCount: number = 0;
     private goatCount: number = 0;
+    private dieGoat:number = 0;
     private isGoatTurn: boolean = true;
     private selectedTiger: Node | null = null;
 
@@ -63,6 +67,7 @@ export class GameManager extends Component {
             this.node.destroy();
             return;
         }
+
     }
 
     start() {
@@ -74,6 +79,8 @@ export class GameManager extends Component {
 
         // 初始化山羊可放置位置
         this.calcuateTypePositions(CellState.EMPTY);
+
+        this.hideWinScreen();
     }
 
     // ===== 初始化方法 =====
@@ -176,10 +183,6 @@ export class GameManager extends Component {
     }
 
     private handleGoatTurn(point: Node, x: number, y: number) {
-        if (this.goatCount >= this.maxGoats) {
-            console.log("已經達到最大山羊數量");
-            return;
-        }
         if (this.boardState[y][x] !== CellState.EMPTY) {
             console.log("該位置已經有棋子");
             return;
@@ -196,15 +199,9 @@ export class GameManager extends Component {
             }
             return;
         }
-
         if (this.boardState[y][x] !== CellState.EMPTY) {
             console.log("目標位置已有棋子");
-            // 清除高亮图片
-            const pointComp = point.getComponent(Point);
-            if (pointComp) {
-                pointComp.setHighlight(false);
-            }
-            this.selectedTiger = null;
+            // this.selectedTiger = null;
             return;
         }
 
@@ -234,6 +231,7 @@ export class GameManager extends Component {
         this.goatCount++;
         console.log("放置山羊成功，當前山羊數量：", this.goatCount);
         this.setTurn(CellState.TIGER)
+        this.checkWinCondition();
     }
 
     private setupGoatComponents(goat: Node) {
@@ -277,7 +275,10 @@ export class GameManager extends Component {
             }
             
             if(this.boardState[jump.y]?.[jump.x]=== CellState.EMPTY) return jump;
-            else return null
+            else return null;
+        }
+        else{
+            return null;
         }
     }
 
@@ -375,6 +376,76 @@ export class GameManager extends Component {
         this.setTurn(CellState.GOAT);
     }
 
+    private checkWinCondition() {
+        // 檢查老虎是否獲勝（吃掉5隻山羊）
+        if (this.dieGoat >= 5) {
+            console.log('GameManager::checkWinCondition five goats');
+            this.showWinScreen(true);
+            return;
+        }
+
+        // 檢查山羊是否獲勝（困住所有老虎）
+        let allTigersTrapped = true;
+        for (let y = 0; y < this.gridSize; y++) {
+            for (let x = 0; x < this.gridSize; x++) {
+                if (this.boardState[y][x] === CellState.TIGER) {
+                    // 檢查老虎是否有可移動的位置
+                    const hasValidMove = this.checkTigerHasValidMove(x, y);
+                    if (hasValidMove) {
+                        allTigersTrapped = false;
+                        break;
+                    }
+                }
+            }
+            if (!allTigersTrapped) break;
+        }
+
+        if (allTigersTrapped) {
+            console.log('GameManager::checkWinCondition all tigers');
+            this.showWinScreen(false);
+        }
+    }
+
+    private checkTigerHasValidMove(x: number, y: number): boolean {
+        const main = { x, y };
+        
+        // 檢查所有可能的方向
+        const directions = [
+            { x, y: y + 1 }, { x, y: y - 1 },
+            { x: x + 1, y }, { x: x - 1, y }
+        ];
+
+        // 如果是對角線位置，添加對角線方向
+        if ((x + y) % 2 === 0) {
+            directions.push(
+                { x: x + 1, y: y + 1 }, { x: x - 1, y: y + 1 },
+                { x: x + 1, y: y - 1 }, { x: x - 1, y: y - 1 }
+            );
+        }
+
+        // 檢查每個方向是否有有效移動
+        for (const dir of directions) {
+            const result = this.isValidPosition(main, dir);
+            if (result) return true;
+        }
+
+        return false;
+    }
+
+    private showWinScreen(isTigerWin: boolean) {
+        const winScreenComp = this.winScreen.getComponent(WinScreen);
+        if (winScreenComp) {
+            winScreenComp.showWinScreen(isTigerWin);
+        }
+    }
+
+    public hideWinScreen() {
+        const winScreenComp = this.winScreen.getComponent(WinScreen);
+        if (winScreenComp) {
+            winScreenComp.hideWinScreen();
+        }
+    }
+
     private checkGoatCapture(oldX: number, oldY: number, newX: number, newY: number) {
         const midX = (oldX + newX) / 2;
         const midY = (oldY + newY) / 2;
@@ -386,7 +457,9 @@ export class GameManager extends Component {
                 goat.destroy();
                 this.boardState[midY][midX] = CellState.EMPTY;
                 this.goatCount--;
+                this.dieGoat++;
                 console.log("老虎吃掉一隻羊！");
+                this.checkWinCondition(); // 檢查是否獲勝
             }
         }
     }
