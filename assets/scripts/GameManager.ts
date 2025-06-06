@@ -379,7 +379,6 @@ export class GameManager extends Component {
     private checkWinCondition() {
         // 檢查老虎是否獲勝（吃掉5隻山羊）
         if (this.dieGoat >= 5) {
-            console.log('GameManager::checkWinCondition five goats');
             this.showWinScreen(true);
             return;
         }
@@ -401,7 +400,6 @@ export class GameManager extends Component {
         }
 
         if (allTigersTrapped) {
-            console.log('GameManager::checkWinCondition all tigers');
             this.showWinScreen(false);
         }
     }

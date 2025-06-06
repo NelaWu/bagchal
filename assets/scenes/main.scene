@@ -523,7 +523,7 @@
   {
     "__type__": "cc.Node",
     "_name": "WinScreen",
-    "_objFlags": 0,
+    "_objFlags": 512,
     "__editorExtras__": {},
     "_parent": {
       "__id__": 2
@@ -565,7 +565,7 @@
       "y": 1,
       "z": 1
     },
-    "_mobility": 0,
+    "_mobility": 1,
     "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
@@ -578,7 +578,7 @@
   {
     "__type__": "cc.Node",
     "_name": "Background",
-    "_objFlags": 0,
+    "_objFlags": 512,
     "__editorExtras__": {},
     "_parent": {
       "__id__": 13
@@ -687,7 +687,7 @@
   {
     "__type__": "cc.Node",
     "_name": "WinPanel",
-    "_objFlags": 0,
+    "_objFlags": 512,
     "__editorExtras__": {},
     "_parent": {
       "__id__": 13
@@ -742,7 +742,7 @@
   {
     "__type__": "cc.Node",
     "_name": "Title",
-    "_objFlags": 0,
+    "_objFlags": 512,
     "__editorExtras__": {},
     "_parent": {
       "__id__": 17
@@ -874,7 +874,7 @@
   {
     "__type__": "cc.Node",
     "_name": "WinnerLabel",
-    "_objFlags": 0,
+    "_objFlags": 512,
     "__editorExtras__": {},
     "_parent": {
       "__id__": 17
@@ -1006,7 +1006,7 @@
   {
     "__type__": "cc.Node",
     "_name": "Winner",
-    "_objFlags": 0,
+    "_objFlags": 512,
     "__editorExtras__": {},
     "_parent": {
       "__id__": 17
