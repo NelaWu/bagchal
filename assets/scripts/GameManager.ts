@@ -45,7 +45,8 @@ export class GameManager extends Component {
 
     // ===== 遊戲配置 =====
     private readonly gridSize: number = 5;
-    private readonly spacing: number = 188; // 每個點之間的距離
+    private readonly spacingY: number = 188; // 每個點之間的距離
+    private readonly spacingX: number = 188; // 每個點之間的距離
     private readonly tigerPositions = [
         [-2, 2], [2, 2], [-2, -2], [2, -2]
     ];
@@ -100,6 +101,8 @@ export class GameManager extends Component {
         this.tigerPositions.forEach(pos => {
             const tiger = instantiate(this.tigerPrefab);
             const [x, y] = pos;
+            console.log('spawnTigers' , pos);
+            
             const worldPos = this.getWorldPositionFromGrid(x, y);
             tiger.setPosition(worldPos);
             this.boardNode.addChild(tiger);
@@ -111,9 +114,9 @@ export class GameManager extends Component {
     }
 
     private spawnPoints() {
-        const boardSize = this.gridSize * this.spacing;
-        const startX = -boardSize / 2 + this.spacing / 2;
-        const startY = boardSize / 2 - this.spacing / 2;
+        const boardSize = this.gridSize * this.spacingY;
+        const startX = -boardSize / 2 + this.spacingX / 2;
+        const startY = boardSize / 2 - this.spacingY / 2;
 
         // 初始化点位数组
         this.pointNodes = Array(this.gridSize).fill(null).map(() => Array(this.gridSize).fill(null));
@@ -121,8 +124,8 @@ export class GameManager extends Component {
         for (let y = 0; y < this.gridSize; y++) {
             for (let x = 0; x < this.gridSize; x++) {
                 const point = instantiate(this.pointPrefab);
-                const posX = startX + x * this.spacing;
-                const posY = startY - y * this.spacing;
+                const posX = startX + x * this.spacingX;
+                const posY = startY - y * this.spacingY;
                 point.setPosition(new Vec3(posX, posY, 0));
                 this.boardNode.addChild(point);
                 point.name = `point-${x}-${y}`;
@@ -161,12 +164,12 @@ export class GameManager extends Component {
 
     // ===== 座標轉換方法 =====
     private getWorldPositionFromGrid(x: number, y: number): Vec3 {
-        const boardSize = this.gridSize * this.spacing;
-        const startX = -boardSize / 2 + this.spacing / 2;
-        const startY = boardSize / 2 - this.spacing / 2;
+        const boardSize = this.gridSize * this.spacingY;
+        const startX = -boardSize / 2 + this.spacingX / 2;
+        const startY = boardSize / 2 - this.spacingY / 2;
         return new Vec3(
-            startX + (x + 2) * this.spacing,
-            startY - (y + 2) * this.spacing,
+            startX + (x + 2) * this.spacingX,
+            startY - (y + 2) * this.spacingY,
             0
         );
     }
