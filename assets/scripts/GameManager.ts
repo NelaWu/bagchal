@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Prefab, instantiate, Vec3, log, Input, EventTouch, UITransform, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, Node, Prefab, instantiate, Vec3, UITransform, Sprite, SpriteFrame } from 'cc';
 import { Point } from './Point';
 import { WinScreen } from './WinScreen';
 const { ccclass, property } = _decorator;
@@ -68,7 +68,6 @@ export class GameManager extends Component {
             this.node.destroy();
             return;
         }
-
     }
 
     start() {
@@ -101,8 +100,6 @@ export class GameManager extends Component {
         this.tigerPositions.forEach(pos => {
             const tiger = instantiate(this.tigerPrefab);
             const [x, y] = pos;
-            console.log('spawnTigers' , pos);
-            
             const worldPos = this.getWorldPositionFromGrid(x, y);
             tiger.setPosition(worldPos);
             this.boardNode.addChild(tiger);
@@ -194,7 +191,7 @@ export class GameManager extends Component {
     }
 
     private handleTigerTurn(point: Node, x: number, y: number) {
-        if (!this.selectedTiger) {
+        if (!this.selectedTiger || this.boardState[y][x] == CellState.TIGER) {
             if (this.boardState[y][x] === CellState.TIGER) {
                 this.selectedTiger = this.boardNode.getChildByName(`tiger-${x}-${y}`);
                 //計算老虎可以走的位置 & 還有可以點選的點位
@@ -202,9 +199,8 @@ export class GameManager extends Component {
             }
             return;
         }
-        if (this.boardState[y][x] !== CellState.EMPTY) {
+        if (this.boardState[y][x] == CellState.GOAT) {
             console.log("目標位置已有棋子");
-            // this.selectedTiger = null;
             return;
         }
 
@@ -292,7 +288,6 @@ export class GameManager extends Component {
 
     private calculateTigerMovePositions(tiger: Node):void{
         const [_,x, y] = tiger.name.split('-').map(Number);
-        console.log('GameManager::calculateTigerMovePositions',x,y);
         const main = {x, y};
         
         // 1. 上下左右
