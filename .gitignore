@@ -34,3 +34,7 @@ Thumbs.db
 
 # Cocos Creator auto backup
 *.bak
+
+#build
+!build/
+!build/**

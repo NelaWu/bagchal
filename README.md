@@ -2,6 +2,9 @@
 
 BaghChal 是一個傳統的尼泊爾棋盤遊戲，意為"老虎的移動"。這是一個使用 Cocos Creator 3.8.6 開發的現代版本。
 
+## 單機版Demo
+`https://bagchal.onrender.com/`
+
 ## 遊戲介紹
 
 BaghChal 是一個雙人對戰的戰略棋盤遊戲，一方控制 4 隻老虎，另一方控制 20 隻山羊。遊戲在 5x5 的棋盤上進行。
