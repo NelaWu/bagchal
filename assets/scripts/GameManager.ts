@@ -1,6 +1,7 @@
 import { _decorator, Component, Node, Prefab, instantiate, Vec3, UITransform, Sprite, SpriteFrame } from 'cc';
 import { Point } from './Point';
 import { WinScreen } from './WinScreen';
+import { GameData, startNewGame } from './GameApi';
 const { ccclass, property } = _decorator;
 
 // 定義棋盤格子的狀態
@@ -44,18 +45,16 @@ export class GameManager extends Component {
     winScreen: Node = null;
 
     // ===== 遊戲 API =====
-    private readonly serverUrl = 'https://bagchalgolang1.onrender.com/api';
+    private readonly serverUrl = 'https://bagchalgolang.onrender.com/api';
 
     // ===== 遊戲配置 =====
     private readonly gridSize: number = 5;
     private readonly spacingY: number = 188; // 每個點之間的距離
     private readonly spacingX: number = 188; // 每個點之間的距離
-    private readonly tigerPositions = [
-        [-2, 2], [2, 2], [-2, -2], [2, -2]
-    ];
+    private readonly tigerPositions:number[][] = [];
 
     // ===== 遊戲狀態 =====
-    private boardState: CellState[][] = [];
+    private boardState: CellState[][];
     private pointNodes: Node[][] = [];  // 存储所有点位节点
     private tigerCount: number = 0;
     private goatCount: number = 0;
@@ -81,45 +80,17 @@ export class GameManager extends Component {
         this.hideWinScreen();
 
         // 從伺服器開始一個新遊戲
-        await this.startNewGameFromServer();
-    }
-
-    /**
-     * 從伺服器請求開始一個新遊戲
-     */
-    async startNewGameFromServer() {
         try {
-            console.log("正在從伺服器請求新遊戲...");
-            const response = await fetch(`${this.serverUrl}/games`, {
-                method: 'POST', // 假設是 POST 請求來建立新遊戲
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                // body
-                body: JSON.stringify(  {
-                    "playerId": "player123",
-                    "isAIGame": true,
-                    "aiLevel": 2
-                }) 
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`伺服器錯誤: ${response.status} ${response.statusText}`, errorText);
-                // 在此處可以加入 UI 提示，例如「無法連線至伺服器」
-                return;
-            }
-
-            const gameData = await response.json();
-            console.log("從伺服器獲取遊戲資料:", gameData);
-
-            // 根據從伺服器收到的資料來初始化遊戲
-            this.initializeBoardFromServer(gameData);
-
+            const gameData: GameData = await startNewGame();
+            // 你可以這樣取得棋盤
+            const board = gameData.state.board;
+            // 其他資料也可以直接用 gameData.state.goatsInHand 等
+            this.initializeBoardFromServer(board);
         } catch (error) {
-            console.error("請求新遊戲失敗:", error);
+            console.error('無法從伺服器取得新遊戲:', error);
         }
     }
+
 
     /**
      * 根據伺服器回傳的資料來初始化棋盤
@@ -128,11 +99,20 @@ export class GameManager extends Component {
     private initializeBoardFromServer(gameData: any) {
         // 假設 gameData 格式為 { board: CellState[][], tigers: {x: number, y: number}[] }
         // 你需要根據你的後端 API 回應的實際格式來調整此部分
-
+        console.log('GameManager::init',gameData);
+        
         // 1. 初始化棋盤狀態
-        this.boardState = gameData.board || Array(5).fill(null).map(() => Array(5).fill(CellState.EMPTY));
+        this.boardState = gameData;
 
         // 2. 根據伺服器資料產生老虎
+        for (let i = 0; i < this.boardState.length; i++) {
+            for (let j = 0; j < this.boardState[i].length; j++) {
+                if (this.boardState[i][j] === 1) {
+                    this.tigerPositions.push([j - 2,i - 2]); // 假設你的座標系統是 -2~2
+                }
+            }
+        }
+        
         this.spawnTigersFromServer(gameData.tigers || this.tigerPositions.map(p => ({ x: p[0], y: p[1] })));
 
         // 3. 設定初始回合 (或根據伺服器資料設定)
