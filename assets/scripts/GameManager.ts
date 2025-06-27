@@ -1,7 +1,7 @@
 import { _decorator, Component, Node, Prefab, instantiate, Vec3, UITransform, Sprite, SpriteFrame } from 'cc';
 import { Point } from './Point';
 import { WinScreen } from './WinScreen';
-import { GameData, startNewGame } from './GameApi';
+import { GameApi, GameData } from './GameApi';
 const { ccclass, property } = _decorator;
 
 // 定義棋盤格子的狀態
@@ -62,6 +62,8 @@ export class GameManager extends Component {
     private isGoatTurn: boolean = true;
     private selectedTiger: Node | null = null;
 
+    private gameApi:GameApi = new GameApi();
+
     // ===== 生命週期方法 =====
     onLoad() {
         if (GameManager._instance === null) {
@@ -81,7 +83,7 @@ export class GameManager extends Component {
 
         // 從伺服器開始一個新遊戲
         try {
-            const gameData: GameData = await startNewGame();
+            const gameData: GameData = await this.gameApi.startNewGame();
             // 你可以這樣取得棋盤
             const board = gameData.state.board;
             // 其他資料也可以直接用 gameData.state.goatsInHand 等
@@ -236,6 +238,7 @@ export class GameManager extends Component {
     onPointClicked(point: Node) {
         console.log("GameManager::onPointClicked", point.name);
         const [_, x, y] = point.name.split('-').map(Number);
+        this.gameApi.move(this.isGoatTurn?2:1,x,y)
         if (this.isGoatTurn) {
             this.handleGoatTurn(point, x, y);
         } else {
