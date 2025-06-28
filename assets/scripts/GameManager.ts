@@ -447,30 +447,8 @@ export class GameManager extends Component {
     }
 
     private checkWinCondition() {
-        // 檢查老虎是否獲勝（吃掉5隻山羊）
-        if (this.dieGoat >= 5) {
-            this.showWinScreen(true);
-            return;
-        }
-
-        // 檢查山羊是否獲勝（困住所有老虎）
-        let allTigersTrapped = true;
-        for (let x = 0; x < this.gridSize; x++) {
-            for (let y = 0; y < this.gridSize; y++) {
-                if (this.boardState[x][y] === CellState.TIGER) {
-                    // 檢查老虎是否有可移動的位置
-                    const hasValidMove = this.checkTigerHasValidMove(x, y);
-                    if (hasValidMove) {
-                        allTigersTrapped = false;
-                        break;
-                    }
-                }
-            }
-            if (!allTigersTrapped) break;
-        }
-
-        if (allTigersTrapped) {
-            this.showWinScreen(false);
+        if (this.gameData.state.isGameOver == true){
+            this.gameData.state.winner==1 ? this.showWinScreen(true) : this.showWinScreen(false)
         }
     }
 
