@@ -7,7 +7,11 @@ export interface GameState {
     currentTurn: number;
     isGameOver: boolean;
     winner: number;
-    lastMove: any; // 可根據實際 lastMove 結構調整
+    lastMove: {
+        from: { x: number, y: number };
+        to: { x: number, y: number };
+        pieceType: number;
+    } | null;
 }
 
 export interface GameData {
@@ -62,7 +66,7 @@ export class GameApi{
         };
     }
     
-     async  move(type:CellState,x:number,y:number) {
+     async move(type:CellState,x:number,y:number): Promise<GameData> {
         const response = await fetch(`${this.BASE_URL}/games/${this.GAME_ID}/moves`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -84,7 +88,23 @@ export class GameApi{
         }
         const data = await response.json();
         console.log(">>>GameApi::move",data);
-        
+        return {
+            id: data.id,
+            state: {
+                board: data.state.board,
+                goatsInHand: data.state.goatsInHand,
+                capturedGoats: data.state.capturedGoats,
+                currentTurn: data.state.currentTurn,
+                isGameOver: data.state.isGameOver,
+                winner: data.state.winner,
+                lastMove: data.state.lastMove,
+            },
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+            playerId: data.playerId,
+            isAIGame: data.isAIGame,
+            aiLevel: data.aiLevel,
+        }
     }
     
     // 你可以繼續擴充其他 API，例如 moveTiger、placeGoat 等

@@ -63,6 +63,7 @@ export class GameManager extends Component {
     private selectedTiger: Node | null = null;
 
     private gameApi:GameApi = new GameApi();
+    private gameData:GameData;
 
     // ===== 生命週期方法 =====
     onLoad() {
@@ -83,9 +84,9 @@ export class GameManager extends Component {
 
         // 從伺服器開始一個新遊戲
         try {
-            const gameData: GameData = await this.gameApi.startNewGame();
+            this.gameData = await this.gameApi.startNewGame();
             // 你可以這樣取得棋盤
-            const board = gameData.state.board;
+            const board = this.gameData.state.board;
             // 其他資料也可以直接用 gameData.state.goatsInHand 等
             this.initializeBoardFromServer(board);
         } catch (error) {
@@ -155,24 +156,6 @@ export class GameManager extends Component {
         return true;
     }
 
-    private initializeBoardState() {
-        this.boardState = Array(5).fill(null).map(() => Array(5).fill(CellState.EMPTY));
-    }
-
-    private spawnTigers() {
-        this.tigerPositions.forEach(pos => {
-            const tiger = instantiate(this.tigerPrefab);
-            const [x, y] = pos;
-            const worldPos = this.getWorldPositionFromGrid(x, y);
-            tiger.setPosition(worldPos);
-            this.boardNode.addChild(tiger);
-            tiger.name = `tiger-${x+2}-${y+2}`;
-            console.log('tiger' , tiger.name);
-            this.tigerCount++;
-            this.boardState[y + 2][x + 2] = CellState.TIGER;
-        });
-    }
-
     private spawnPoints() {
         const boardSize = this.gridSize * this.spacingY;
         const startX = -boardSize / 2 + this.spacingX / 2;
@@ -235,15 +218,31 @@ export class GameManager extends Component {
     }
 
     // ===== 事件處理方法 =====
-    onPointClicked(point: Node) {
+    async onPointClicked(point: Node) {
         console.log("GameManager::onPointClicked", point.name);
         const [_, x, y] = point.name.split('-').map(Number);
-        this.gameApi.move(this.isGoatTurn?2:1,x,y)
+        try{
+            this.gameData = await this.gameApi.move(this.isGoatTurn?2:1,x,y)
+        }catch(error){
+            console.log("請求遊戲移動失敗",error,this.isGoatTurn,x,y)
+        }
+        //畫面更新旗子的移動
         if (this.isGoatTurn) {
             this.handleGoatTurn(point, x, y);
         } else {
             this.handleTigerTurn(point, x, y);
         }
+        //如果ai有移動
+        if(this.gameData.isAIGame && this.gameData.state.lastMove != null){
+            if(this.gameData.state.lastMove.pieceType == CellState.TIGER){
+                const tigerPoint:Node = this.boardNode.getChildByName(`point-${this.gameData.state.lastMove.from.x}-${this.gameData.state.lastMove.from.y}`);
+                this.handleTigerTurn(tigerPoint,this.gameData.state.lastMove.from.x,this.gameData.state.lastMove.from.y)
+            }
+            else if (this.gameData.state.lastMove.pieceType == CellState.GOAT){
+                //to do goat ai
+            }
+        }
+
     }
 
     private handleGoatTurn(point: Node, x: number, y: number) {
@@ -256,18 +255,25 @@ export class GameManager extends Component {
 
     private handleTigerTurn(point: Node, x: number, y: number) {
         if (!this.selectedTiger || this.boardState[y][x] == CellState.TIGER) {
-            if (this.boardState[y][x] === CellState.TIGER) {
+            if (this.boardState[y][x] == CellState.TIGER) {
                 this.selectedTiger = this.boardNode.getChildByName(`tiger-${x}-${y}`);
                 //計算老虎可以走的位置 & 還有可以點選的點位
                  this.calculateTigerMovePositions(this.selectedTiger);
             }
-            return;
+            //如果不是ai就要分兩次click，如果是的話就一次完成所以不return
+            if(this.gameData.isAIGame==false){
+                return;
+            }
+            else{
+                point = this.boardNode.getChildByName(`point-${this.gameData.state.lastMove.to.x}-${this.gameData.state.lastMove.to.y}`);
+                x = this.gameData.state.lastMove.to.x
+                y = this.gameData.state.lastMove.to.y
+            }
         }
         if (this.boardState[y][x] == CellState.GOAT) {
             console.log("目標位置已有棋子");
             return;
         }
-
         this.moveTiger(point, x, y);
     }
 
@@ -506,6 +512,13 @@ export class GameManager extends Component {
         }
     }
 
+    /**
+     * 判斷羊是不是有要被吃
+     * @param oldX 
+     * @param oldY 
+     * @param newX 
+     * @param newY 
+     */
     private checkGoatCapture(oldX: number, oldY: number, newX: number, newY: number) {
         const midX = (oldX + newX) / 2;
         const midY = (oldY + newY) / 2;
