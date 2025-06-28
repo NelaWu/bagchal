@@ -38,7 +38,7 @@ export class WinScreen extends Component {
         }
         
         if (this.winnerLabel) {
-            this.winnerLabel.string = '因為開發者是免費仔，所以需要等server回傳比較久';
+            this.winnerLabel.string = '因為開發者是免費仔，\n\r所以需要等server回傳比較久';
         }
     }
 
