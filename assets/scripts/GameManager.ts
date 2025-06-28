@@ -78,22 +78,34 @@ export class GameManager extends Component {
     async start() {
         if (!this.validatePrefabs()) return;
         
-        // 先產生點位節點
-        this.spawnPoints();
-        this.hideWinScreen();
-
-        // 從伺服器開始一個新遊戲
-        try {
-            this.gameData = await this.gameApi.startNewGame();
-            // 你可以這樣取得棋盤
-            const board = this.gameData.state.board;
-            // 其他資料也可以直接用 gameData.state.goatsInHand 等
-            this.initializeBoardFromServer(board);
-        } catch (error) {
-            console.error('無法從伺服器取得新遊戲:', error);
-        }
+        // 使用 Promise 鏈來確保執行順序
+        await this.initializeGame();
     }
 
+    private async initializeGame(): Promise<void> {
+        try {
+            // 1. 先產生點位節點
+            this.spawnPoints();
+            
+            // 2. 顯示等待畫面
+            this.showUnclick();
+            
+            // 3. 等待服務器回應
+            this.gameData = await this.gameApi.startNewGame();
+            
+            // 4. 收到回應後隱藏等待畫面
+            this.hideWinScreen();
+            
+            // 5. 初始化棋盤
+            const board = this.gameData.state.board;
+            this.initializeBoardFromServer(board);
+            
+        } catch (error) {
+            console.error('GameManager::initializeGame - 初始化失敗:', error);
+            // 即使出錯也要隱藏等待畫面
+            this.hideWinScreen();
+        }
+    }
 
     /**
      * 根據伺服器回傳的資料來初始化棋盤
@@ -482,6 +494,13 @@ export class GameManager extends Component {
         const winScreenComp = this.winScreen.getComponent(WinScreen);
         if (winScreenComp) {
             winScreenComp.showWinScreen(isTigerWin);
+        }
+    }
+
+    public showUnclick(){
+        const winScreenComp = this.winScreen.getComponent(WinScreen);
+        if (winScreenComp) {
+            winScreenComp.showUnclick();
         }
     }
 

@@ -184,7 +184,7 @@
     "_priority": 0,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 670.5593451568894,
+    "_orthoHeight": 666.6302864938608,
     "_near": 0,
     "_far": 2000,
     "_color": {
@@ -1168,6 +1168,9 @@
     "__prefab": null,
     "winPanel": {
       "__id__": 17
+    },
+    "title": {
+      "__id__": 20
     },
     "winnerLabel": {
       "__id__": 23
