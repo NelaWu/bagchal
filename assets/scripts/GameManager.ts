@@ -137,6 +137,10 @@ export class GameManager extends Component {
         this.calcuateTypePositions(CellState.EMPTY);
     }
 
+    private setBoard(){
+        this.boardState = this.gameData.state.board;
+    }
+
     private spawnTigersFromServer(tigerPositions: {x: number, y: number}[]) {
         // 清除可能已存在的老虎
         this.boardNode.children.forEach(child => {
@@ -254,7 +258,6 @@ export class GameManager extends Component {
                 //to do goat ai
             }
         }
-
     }
 
     private handleGoatTurn(point: Node, x: number, y: number) {
@@ -266,7 +269,7 @@ export class GameManager extends Component {
     }
 
     private handleTigerTurn(point: Node, x: number, y: number) {
-        console.log('handleTigerTurn::ai',this.boardState[x][y]);
+        console.log('handleTigerTurn::ai',x,y);
         if (!this.selectedTiger || this.boardState[x][y] == CellState.TIGER) {
             if (this.boardState[x][y] == CellState.TIGER) {
                 this.selectedTiger = this.boardNode.getChildByName(`tiger-${x}-${y}`);
@@ -519,19 +522,20 @@ export class GameManager extends Component {
      * @param newY 
      */
     private checkGoatCapture(oldX: number, oldY: number, newX: number, newY: number) {
-        const midX = (oldX + newX) / 2;
-        const midY = (oldY + newY) / 2;
-        
-        if (this.boardState[midY]?.[midX] === CellState.GOAT) {
-            const goatName = `goat-${midX}-${midY}`;
-            const goat = this.boardNode.getChildByName(goatName);
-            if (goat) {
-                goat.destroy();
-                this.boardState[midX][midY] = CellState.EMPTY;
-                this.goatCount--;
-                this.dieGoat++;
-                console.log("老虎吃掉一隻羊！");
-                this.checkWinCondition(); // 檢查是否獲勝
+        if (this.gameData.state.capturedGoats > this.dieGoat){
+            const midX = (oldX + newX) / 2;
+            const midY = (oldY + newY) / 2;
+            if (this.boardState[midX]?.[midY] === CellState.GOAT) {
+                const goatName = `goat-${midX}-${midY}`;
+                const goat = this.boardNode.getChildByName(goatName);
+                if (goat) {
+                    goat.destroy();
+                    this.boardState[midX][midY] = CellState.EMPTY;
+                    this.goatCount--;
+                    this.dieGoat++;
+                    console.log("老虎吃掉一隻羊！");
+                    this.checkWinCondition(); // 檢查是否獲勝
+                }
             }
         }
     }
