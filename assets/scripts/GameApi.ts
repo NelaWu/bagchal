@@ -26,7 +26,7 @@ export interface GameData {
 
 export class GameApi{
 
-    private BASE_URL = 'https://bagchalgolang.onrender.com/api';
+    private BASE_URL ='https://bagchalgolang.onrender.com/api';// 'http://localhost:10000/api';
     private GAME_ID:string;
 
     async startNewGame(): Promise<GameData> {
@@ -37,7 +37,7 @@ export class GameApi{
             body: JSON.stringify(  {
                 "playerId": "player123",
                 "isAIGame": true,
-                "aiLevel": 2
+                "aiLevel": 3
             }) 
         });
         if (!response.ok) {
